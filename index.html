@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PC診断｜迷わず決まる</title>
+  <meta name="description" content="2択でサクッと。あなたに合うPCの方向性と推奨スペックを提案します。" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="./favicon.png" sizes="48x48">
+  <link rel="apple-touch-icon" href="./favicon.png">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div>
+          <h1>PC診断</h1>
+          <p class="sub">2択でサクッと。迷いを減らして、後悔しにくい方向性を出します。</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" aria-live="polite">
+      <div class="cardHead">
+        <div class="pillRow">
+          <div class="pill" id="pillLeft">2択で進みます</div>
+          <div class="pill" id="pillRight"><span class="qno" id="qno">Q1/6</span></div>
+        </div>
+        <div class="progress" aria-label="進捗"><div class="bar" id="bar"></div></div>
+      </div>
+      <div class="cardBody" id="app"></div>
+    </section>
+
+    <div class="footerNote">
+      ※価格・在庫は変動します。ここでは「用途に合う方向性」を短く提示します。リンクは後で差し替え前提でOK。
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "pc_diagnosis_v1_state";
+
+  const LINKS_BASE = {
+  mouse:   { label: "マウスで探す",   buildUrl: (q) => `https://www.mouse-jp.co.jp/store/g/ggaming/?search=${encodeURIComponent(q)}` },
+  dospara: { label: "ドスパラで探す", buildUrl: (q) => `https://www.dospara.co.jp/search?keyword=${encodeURIComponent(q)}` },
+  amazon:  { label: "Amazonで探す",   buildUrl: (q) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(q)}` }
+  };
+
+  const TYPES = {
+    game: {
+      name: "ゲーム・配信向け",
+      blurb: "性能不足の後悔を避けるタイプ。GPUと冷却を最優先に。",
+      conclusion: "結論：ゲーム/配信なら「GPU優先」。迷ったらフルHDで安定を基準に決める。",
+      must: "削るな：GPUと冷却（筐体/排熱）。ここが弱いと満足度が落ちやすい。",
+      okToCut: "削ってOK：ストレージは後から増設しやすい（まず512GB〜で開始可能）。",
+      specs: [
+        "CPU：Core i5 / Ryzen 5 以上（新しめ）",
+        "GPU：フルHDならミドル帯以上（用途で上下）",
+        "メモリ：16GB（余裕なら32GB）",
+        "SSD：512GB以上（ゲーム多いなら1TB）"
+      ]
+    },
+    creator: {
+      name: "制作・クリエイティブ向け",
+      blurb: "待ち時間を減らす投資が効くタイプ。RAMとSSD厚めが正義。",
+      conclusion: "結論：制作は「RAMとSSD」が効く。時間を買うつもりで上位寄せが回収しやすい。",
+      must: "削るな：メモリ（基本32GB目安）。不足すると作業が詰まりやすい。",
+      okToCut: "削ってOK：画面サイズは外部モニターで解決できる（移動重視なら小さめでもOK）。",
+      specs: [
+        "CPU：Core i7 / Ryzen 7 以上を基本（用途で調整）",
+        "メモリ：32GB推奨（ライトなら16GBでも可）",
+        "SSD：1TB推奨（素材を扱うなら余裕）",
+        "GPU：必要な人は中〜上位（動画/3D/生成AIで変動）"
+      ]
+    },
+    biz: {
+      name: "仕事・学習（万能）向け",
+      blurb: "失敗しにくい安全ルート。軽さ/安定/バッテリー重視。",
+      conclusion: "結論：迷ったら万能タイプ。RAM16GB/SSD512GBを満たせば失敗しにくい。",
+      must: "削るな：メモリ16GB（最低ライン）。体感速度と寿命に直結しやすい。",
+      okToCut: "削ってOK：CPUはミドル帯で十分なことが多い（世代の新しさ優先）。",
+      specs: [
+        "CPU：Core i5 / Ryzen 5 以上（新しめ）",
+        "メモリ：16GB推奨（最低でも8GBは避けたい）",
+        "SSD：512GB推奨（最低でも256GB以上）",
+        "重量：目安1.3kg前後（毎日持つなら）"
+      ]
+    },
+    build: {
+      name: "自作・こだわり派",
+      blurb: "構成を考えるのが楽しいタイプ。まずはBTOベースも現実的。",
+      conclusion: "結論：迷うなら「BTOベース→後で増設」が最短。最初から完璧を狙わない。",
+      must: "削るな：電源/冷却。ここをケチると不安定・寿命に響きやすい。",
+      okToCut: "削ってOK：ストレージ/メモリは段階増設でOK（必要最小から始められる）。",
+      specs: [
+        "予算配分の型：GPU(40-55%) / CPU(15-25%) / その他",
+        "メモリ：16GB〜（用途で32GB）",
+        "SSD：1TBあると安心（増設前提でもOK）",
+        "OS/周辺機器：意外と総額に効くので注意"
+      ]
+    }
+  };
+
+  const QUESTIONS = [
+    {
+      key: "purpose",
+      title: "一番近いのはどっち？",
+      hint: "ここだけ直感でOKです。",
+      a: { label: "ゲーム・配信・重たい作業がしたい", add: { game: 3, build: 1 } },
+      b: { label: "仕事・学習・普段使いが中心", add: { biz: 3, creator: 1 } }
+    },
+    {
+      key: "mobility",
+      title: "使うシーンは？",
+      hint: "持ち運び頻度で最適解が変わります。",
+      a: { label: "外に持ち出すことが多い", add: { biz: 2, creator: 1 } },
+      b: { label: "家で使うことが多い", add: { game: 2, build: 1, creator: 1 } }
+    },
+    {
+      key: "budget",
+      title: "今の気持ちに近いのは？",
+      hint: "“後悔しない”ほうを選んでOK。",
+      a: { label: "できれば安く済ませたい", add: { biz: 2, build: 1 } },
+      b: { label: "長く快適に使いたい", add: { creator: 2, game: 1, biz: 1 } }
+    },
+    {
+      key: "anxiety",
+      title: "どっちの不安が強い？",
+      hint: "あなたの“地雷”を避けます。",
+      a: { label: "音・熱・バッテリーが不安", add: { biz: 2, creator: 1 } },
+      b: { label: "性能不足で後悔しそう", add: { game: 2, creator: 1, build: 1 } }
+    },
+    {
+      key: "knowledge",
+      title: "PCの知識は？",
+      hint: "分からない人ほど、失敗しにくい方向に寄せます。",
+      a: { label: "正直よく分からない（おまかせ）", add: { biz: 2, creator: 1, game: 1, build: -1 } },
+      b: { label: "多少は分かる・興味ある", add: { build: 3, game: 1, creator: 1 } }
+    },
+    {
+      key: "buyMode",
+      title: "購入スタイルは？",
+      hint: "結果の注意点と導線が変わります。",
+      a: { label: "新品がいい（安心重視）", add: { biz: 1, game: 1, creator: 1, build: 1 } },
+      b: { label: "中古でもOK（安さ重視）", add: { biz: 1, game: 1, creator: 1, build: 1 } }
+    }
+  ];
+
+  const dom = {
+    app: document.getElementById("app"),
+    bar: document.getElementById("bar"),
+    qno: document.getElementById("qno"),
+    pillLeft: document.getElementById("pillLeft"),
+  };
+
+  const state = loadState() || {
+    step: 0,
+    answers: [],
+    scores: { game: 0, creator: 0, biz: 0, build: 0 },
+    buyMode: "new"
+  };
+
+  function saveState(){ try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+  function loadState(){
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj.step !== "number") return null;
+      return obj;
+    } catch(e){ return null; }
+  }
+  function clearState(){ try { sessionStorage.removeItem(STORAGE_KEY); } catch(e) {} }
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function applyAdd(addObj){
+    for (const k of Object.keys(state.scores)) {
+      const v = (addObj && typeof addObj[k] === "number") ? addObj[k] : 0;
+      state.scores[k] += v;
+    }
+  }
+
+  function recalcAll(){
+    state.scores = { game: 0, creator: 0, biz: 0, build: 0 };
+    state.buyMode = "new";
+    for (const ans of state.answers) {
+      const q = QUESTIONS[ans.qIndex];
+      const picked = (ans.choice === "a") ? q.a : q.b;
+      if (q.key === "buyMode") state.buyMode = (ans.choice === "b") ? "used" : "new";
+      applyAdd(picked.add);
+    }
+  }
+
+  function pickResultType(){
+    const order = ["biz", "creator", "game", "build"];
+    let best = -Infinity;
+    for (const k of Object.keys(state.scores)) best = Math.max(best, state.scores[k]);
+    const tied = Object.keys(state.scores).filter(k => state.scores[k] === best);
+    for (const k of order) if (tied.includes(k)) return k;
+    return order[0];
+  }
+
+  function buildLinks(typeKey){
+  const used = state.buyMode === "used";
+
+  // タイプ別：検索クエリ（最小で効く）
+  const qMap = {
+    game:    used ? "ゲーミングPC 中古 RTX 4060" : "ゲーミングPC RTX 4060",
+    creator: used ? "クリエイターPC 中古 32GB 1TB" : "クリエイターPC 32GB 1TB",
+    biz:     used ? "ノートパソコン 中古 16GB 512GB" : "ノートパソコン 16GB 512GB",
+    build:   used ? "BTO 中古 RTX 4060" : "BTO RTX 4060"
+  };
+
+  const q = qMap[typeKey] || (used ? "パソコン 中古" : "パソコン");
+
+  return [
+    { label: LINKS_BASE.mouse.label,   url: LINKS_BASE.mouse.buildUrl(q) },
+    { label: LINKS_BASE.dospara.label, url: LINKS_BASE.dospara.buildUrl(q) },
+    { label: used ? "Amazon（中古も含めて）" : LINKS_BASE.amazon.label, url: LINKS_BASE.amazon.buildUrl(q) }
+  ];
+  }
+
+  function selectThenChoose(btnEl, choice){
+    try { btnEl.classList.add("selected"); } catch(e) {}
+    setTimeout(() => choose(choice), 90);
+  }
+
+  function buildCopyText(typeKey){
+    const t = TYPES[typeKey];
+    const buyModeText = (state.buyMode === "used") ? "中古OK（安さ重視）" : "新品（安心重視）";
+    const lines = [];
+    lines.push("【PC診断 結果】");
+    lines.push(`タイプ：${t.name}`);
+    lines.push(`購入スタイル：${buyModeText}`);
+    lines.push("");
+    lines.push("■ 結論");
+    lines.push(t.conclusion);
+    lines.push(t.must);
+    lines.push(t.okToCut);
+    lines.push("");
+    lines.push("■ 推奨スペック（目安）");
+    for (const s of t.specs) lines.push(`- ${s}`);
+    return lines.join("\n");
+  }
+
+  async function copyResultText(typeKey){
+    const text = buildCopyText(typeKey);
+    try {
+      await navigator.clipboard.writeText(text);
+      const old = dom.pillLeft.textContent;
+      dom.pillLeft.textContent = "コピーしました";
+      setTimeout(() => (dom.pillLeft.textContent = old), 1200);
+    } catch (e) {
+      window.prompt("コピーできない環境です。下のテキストをコピーしてください。", text);
+    }
+  }
+
+  function render(){
+    const total = QUESTIONS.length;
+    const isDone = state.step >= total;
+    const pct = clamp(Math.round((state.step / total) * 100), 0, 100);
+
+    dom.bar.style.width = (isDone ? 100 : pct) + "%";
+    dom.qno.textContent = isDone ? "結果" : `Q${state.step + 1}/${total}`;
+    dom.pillLeft.textContent = isDone ? "あなたのおすすめ" : "2択で進みます";
+
+    if (!isDone) renderQuestion();
+    else renderResult();
+
+    saveState();
+  }
+
+  function renderQuestion(){
+    const q = QUESTIONS[state.step];
+
+    dom.app.innerHTML = `
+      <div class="fade">
+        <div class="kicker">${escapeHtml(q.hint || "")}</div>
+        <h2>${escapeHtml(q.title)}</h2>
+
+        <div class="grid2">
+          <button class="btn choice" id="btnA">${escapeHtml(q.a.label)}</button>
+          <button class="btn choice" id="btnB">${escapeHtml(q.b.label)}</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn small ghost" id="btnBack" ${state.step === 0 ? "disabled" : ""}>戻る</button>
+          <button class="btn small ghost" id="btnReset">最初から</button>
+        </div>
+
+        <div class="footerNote" style="margin-top:10px;">
+          迷ったら「後悔しない方」を選んでOK。
+        </div>
+      </div>
+    `;
+
+    const btnA = document.getElementById("btnA");
+    const btnB = document.getElementById("btnB");
+    btnA.onclick = () => selectThenChoose(btnA, "a");
+    btnB.onclick = () => selectThenChoose(btnB, "b");
+
+    document.getElementById("btnBack").onclick = () => back();
+    document.getElementById("btnReset").onclick = () => resetAll();
+
+    window.onkeydown = (e) => {
+      if (e.key === "ArrowLeft") selectThenChoose(btnA, "a");
+      if (e.key === "ArrowRight") selectThenChoose(btnB, "b");
+      if (e.key === "Escape") resetAll();
+    };
+  }
+
+  function renderResult(){
+    const key = pickResultType();
+    const t = TYPES[key];
+    const links = buildLinks(key);
+    const buyModeText = (state.buyMode === "used") ? "中古OK（安さ重視）" : "新品（安心重視）";
+
+    const cautionUsed = (state.buyMode === "used") ? `
+      <div class="sep"></div>
+      <div class="muted">
+        <div class="danger">中古の注意（短縮版）</div>
+        <ul>
+          <li>OS/世代が古いと更新・サポート面で不利になりがち</li>
+          <li>バッテリー/SSD劣化、保証の有無を必ず確認</li>
+          <li>極端に安い出品はリスク増（返品可/評価を重視）</li>
+        </ul>
+      </div>
+    ` : "";
+
+    dom.app.innerHTML = `
+      <div class="fade">
+        <div class="titleRow">
+          <div>
+            <div class="kicker">診断タイプ</div>
+            <div class="typeName">${escapeHtml(t.name)}</div>
+            <div class="muted" style="margin-top:6px;">${escapeHtml(t.blurb)}</div>
+          </div>
+          <div class="badge">購入スタイル：<b>${escapeHtml(buyModeText)}</b></div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="kicker">結論（迷いを減らす）</div>
+        <ul>
+          <li><b>${escapeHtml(t.conclusion)}</b></li>
+          <li>${escapeHtml(t.must)}</li>
+          <li>${escapeHtml(t.okToCut)}</li>
+        </ul>
+
+        <div class="sep"></div>
+
+        <div class="kicker">推奨スペック（目安）</div>
+        <ul>
+          ${t.specs.map(s => `<li>${escapeHtml(s)}</li>`).join("")}
+        </ul>
+
+        <div class="sep"></div>
+
+        <div class="kicker">購入先（仮リンク）</div>
+        <div class="links">
+          ${links.map(l => `
+            <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
+              <button class="btn small ghost" type="button">${escapeHtml(l.label)}</button>
+            </a>
+          `).join("")}
+        </div>
+
+        ${cautionUsed}
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn small ghost" id="btnCopy">結果をコピー</button>
+          <button class="btn small primary" id="btnRestart">もう一回診断する</button>
+        </div>
+
+        <div class="footerNote">
+          ※リンクは後で差し替えOK。まずは診断体験を固めてから最適化するのが一番速いです。
+        </div>
+      </div>
+    `;
+
+    document.getElementById("btnCopy").onclick = () => copyResultText(key);
+    document.getElementById("btnRestart").onclick = () => resetAll();
+    document.getElementById("btnClear").onclick = () => { clearState(); resetAll(); };
+
+    window.onkeydown = null;
+  }
+
+  function choose(choice){
+    const q = QUESTIONS[state.step];
+    const picked = (choice === "a") ? q.a : q.b;
+
+    if (q.key === "buyMode") state.buyMode = (choice === "b") ? "used" : "new";
+
+    state.answers.push({ qIndex: state.step, choice });
+    applyAdd(picked.add);
+
+    state.step += 1;
+    render();
+  }
+
+  function back(){
+    if (state.step <= 0) return;
+    state.step -= 1;
+    state.answers.pop();
+    recalcAll();
+    render();
+  }
+
+  function resetAll(){
+    state.step = 0;
+    state.answers = [];
+    state.scores = { game: 0, creator: 0, biz: 0, build: 0 };
+    state.buyMode = "new";
+    render();
+  }
+
+  recalcAll();
+  state.step = Math.min(state.step, QUESTIONS.length);
+  if (state.answers.length !== state.step) {
+    state.answers = state.answers.slice(0, state.step);
+    recalcAll();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
