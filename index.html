@@ -7,33 +7,25 @@
   <title>PC診断｜2択で用途別おすすめスペックがすぐ分かる（ゲーム/仕事/クリエイター）</title>
   <meta name="description" content="PC選びで迷う人向け。2択の質問に答えるだけで、あなたに合うPCタイプと推奨スペック（CPU/GPU/メモリ/SSDの目安）を短く提示します。ゲーム/配信・仕事/学習・制作/クリエイター・自作派まで対応。" />
 
-  <!-- Canonical（カスタムドメインが本命） -->
   <link rel="canonical" href="https://pc-diagnosis.shorts-ranking.com/" />
 
-  <!-- Basic SEO -->
   <meta name="robots" content="index,follow" />
   <meta name="theme-color" content="#2563eb" />
 
-  <!-- OGP (X / SNS) -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="PC診断" />
   <meta property="og:title" content="PC診断｜2択でおすすめスペックがすぐ分かる" />
   <meta property="og:description" content="PC選びで迷う人向け。2択で進めるだけで、用途に合うPCタイプと推奨スペックの方向性を短く提示します。" />
   <meta property="og:url" content="https://pc-diagnosis.shorts-ranking.com/" />
-  <!-- OGP画像は後で追加でOK：用意できたらここに差し替え -->
-  <!-- <meta property="og:image" content="https://pc-diagnosis.shorts-ranking.com/ogp.png" /> -->
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="PC診断｜2択でおすすめスペックがすぐ分かる" />
   <meta name="twitter:description" content="PC選びの迷いを減らす。2択で進むだけのPC診断。" />
 
-  <!-- Favicon（既存のままでOK） -->
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="./favicon.png" sizes="48x48">
   <link rel="apple-touch-icon" href="./favicon.png">
 
-  <!-- CSS（分離済み前提） -->
   <link rel="stylesheet" href="./styles.css">
 </head>
 
@@ -71,15 +63,16 @@
   const STORAGE_KEY = "pc_diagnosis_v1_state";
 
   const LINKS_BASE = {
-  mouse:   { label: "マウスで探す",   buildUrl: (q) => `https://www.mouse-jp.co.jp/store/g/ggaming/?search=${encodeURIComponent(q)}` },
-  dospara: { label: "ドスパラで探す", buildUrl: (q) => `https://www.dospara.co.jp/search?keyword=${encodeURIComponent(q)}` },
-  amazon:  { label: "Amazonで探す",   buildUrl: (q) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(q)}` }
+    mouse:   { label: "マウスで探す",   buildUrl: (q) => `https://www.mouse-jp.co.jp/store/g/ggaming/?search=${encodeURIComponent(q)}` },
+    dospara: { label: "ドスパラで探す", buildUrl: (q) => `https://www.dospara.co.jp/search?keyword=${encodeURIComponent(q)}` },
+    amazon:  { label: "Amazonで探す",   buildUrl: (q) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(q)}` }
   };
 
   const TYPES = {
     game: {
       name: "ゲーム・配信向け",
-      blurb: "性能不足の後悔を避けるタイプ。GPUと冷却を最優先に。",
+      blurb: "性能不足の後悔を避けたいタイプ。GPUと冷却を最優先に。",
+      punch: "あなたは「性能不足で後悔したくない」寄り。",
       conclusion: "結論：ゲーム/配信なら「GPU優先」。迷ったらフルHDで安定を基準に決める。",
       must: "削るな：GPUと冷却（筐体/排熱）。ここが弱いと満足度が落ちやすい。",
       okToCut: "削ってOK：ストレージは後から増設しやすい（まず512GB〜で開始可能）。",
@@ -93,6 +86,7 @@
     creator: {
       name: "制作・クリエイティブ向け",
       blurb: "待ち時間を減らす投資が効くタイプ。RAMとSSD厚めが正義。",
+      punch: "あなたは「作業効率（時間）を買う」寄り。",
       conclusion: "結論：制作は「RAMとSSD」が効く。時間を買うつもりで上位寄せが回収しやすい。",
       must: "削るな：メモリ（基本32GB目安）。不足すると作業が詰まりやすい。",
       okToCut: "削ってOK：画面サイズは外部モニターで解決できる（移動重視なら小さめでもOK）。",
@@ -106,6 +100,7 @@
     biz: {
       name: "仕事・学習（万能）向け",
       blurb: "失敗しにくい安全ルート。軽さ/安定/バッテリー重視。",
+      punch: "あなたは「失敗したくない」安全運転寄り。",
       conclusion: "結論：迷ったら万能タイプ。RAM16GB/SSD512GBを満たせば失敗しにくい。",
       must: "削るな：メモリ16GB（最低ライン）。体感速度と寿命に直結しやすい。",
       okToCut: "削ってOK：CPUはミドル帯で十分なことが多い（世代の新しさ優先）。",
@@ -119,6 +114,7 @@
     build: {
       name: "自作・こだわり派",
       blurb: "構成を考えるのが楽しいタイプ。まずはBTOベースも現実的。",
+      punch: "あなたは「選びたい・組みたい」こだわり寄り。",
       conclusion: "結論：迷うなら「BTOベース→後で増設」が最短。最初から完璧を狙わない。",
       must: "削るな：電源/冷却。ここをケチると不安定・寿命に響きやすい。",
       okToCut: "削ってOK：ストレージ/メモリは段階増設でOK（必要最小から始められる）。",
@@ -240,23 +236,22 @@
   }
 
   function buildLinks(typeKey){
-  const used = state.buyMode === "used";
+    const used = state.buyMode === "used";
 
-  // タイプ別：検索クエリ（最小で効く）
-  const qMap = {
-    game:    used ? "ゲーミングPC 中古 RTX 4060" : "ゲーミングPC RTX 4060",
-    creator: used ? "クリエイターPC 中古 32GB 1TB" : "クリエイターPC 32GB 1TB",
-    biz:     used ? "ノートパソコン 中古 16GB 512GB" : "ノートパソコン 16GB 512GB",
-    build:   used ? "BTO 中古 RTX 4060" : "BTO RTX 4060"
-  };
+    const qMap = {
+      game:    used ? "ゲーミングPC 中古 RTX 4060" : "ゲーミングPC RTX 4060",
+      creator: used ? "クリエイターPC 中古 32GB 1TB" : "クリエイターPC 32GB 1TB",
+      biz:     used ? "ノートパソコン 中古 16GB 512GB" : "ノートパソコン 16GB 512GB",
+      build:   used ? "BTO 中古 RTX 4060" : "BTO RTX 4060"
+    };
 
-  const q = qMap[typeKey] || (used ? "パソコン 中古" : "パソコン");
+    const q = qMap[typeKey] || (used ? "パソコン 中古" : "パソコン");
 
-  return [
-    { label: LINKS_BASE.mouse.label,   url: LINKS_BASE.mouse.buildUrl(q) },
-    { label: LINKS_BASE.dospara.label, url: LINKS_BASE.dospara.buildUrl(q) },
-    { label: used ? "Amazon（中古も含めて）" : LINKS_BASE.amazon.label, url: LINKS_BASE.amazon.buildUrl(q) }
-  ];
+    return [
+      { label: LINKS_BASE.mouse.label,   url: LINKS_BASE.mouse.buildUrl(q) },
+      { label: LINKS_BASE.dospara.label, url: LINKS_BASE.dospara.buildUrl(q) },
+      { label: used ? "Amazon（中古も含めて）" : LINKS_BASE.amazon.label, url: LINKS_BASE.amazon.buildUrl(q) }
+    ];
   }
 
   function selectThenChoose(btnEl, choice){
@@ -267,9 +262,11 @@
   function buildCopyText(typeKey){
     const t = TYPES[typeKey];
     const buyModeText = (state.buyMode === "used") ? "中古OK（安さ重視）" : "新品（安心重視）";
+
     const lines = [];
     lines.push("【PC診断 結果】");
     lines.push(`タイプ：${t.name}`);
+    lines.push(`ひとこと：${t.punch}`);
     lines.push(`購入スタイル：${buyModeText}`);
     lines.push("");
     lines.push("■ 結論");
@@ -381,6 +378,13 @@
 
         <div class="sep"></div>
 
+        <div class="kicker">ひとことで</div>
+        <ul>
+          <li><b>${escapeHtml(t.punch)}</b></li>
+        </ul>
+
+        <div class="sep"></div>
+
         <div class="kicker">結論（迷いを減らす）</div>
         <ul>
           <li><b>${escapeHtml(t.conclusion)}</b></li>
@@ -415,13 +419,11 @@
           <button class="btn small primary" id="btnRestart">もう一回診断する</button>
         </div>
 
-
       </div>
     `;
 
     document.getElementById("btnCopy").onclick = () => copyResultText(key);
     document.getElementById("btnRestart").onclick = () => resetAll();
-    document.getElementById("btnClear").onclick = () => { clearState(); resetAll(); };
 
     window.onkeydown = null;
   }
