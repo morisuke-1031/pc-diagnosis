@@ -65,7 +65,7 @@
   const LINKS_BASE = {
     mouse:   { label: "マウスで探す",   buildUrl: (q) => `https://www.mouse-jp.co.jp/store/g/ggaming/?search=${encodeURIComponent(q)}` },
     dospara: { label: "ドスパラで探す", buildUrl: (q) => `https://www.dospara.co.jp/search?keyword=${encodeURIComponent(q)}` },
-    amazon:  { label: "Amazonで探す",   buildUrl: (q) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(q)}` }
+    amazon:  { label: "Amazonで探す",   buildUrl: (_q) => `https://amzn.to/4qsa8ld` }
   };
 
   const TYPES = {
