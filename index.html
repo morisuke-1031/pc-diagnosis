@@ -3,15 +3,37 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PC診断｜迷わず決まる</title>
-  <meta name="description" content="2択でサクッと。あなたに合うPCの方向性と推奨スペックを提案します。" />
 
-  <!-- Favicon -->
+  <title>PC診断｜2択で用途別おすすめスペックがすぐ分かる（ゲーム/仕事/クリエイター）</title>
+  <meta name="description" content="PC選びで迷う人向け。2択の質問に答えるだけで、あなたに合うPCタイプと推奨スペック（CPU/GPU/メモリ/SSDの目安）を短く提示します。ゲーム/配信・仕事/学習・制作/クリエイター・自作派まで対応。" />
+
+  <!-- Canonical（カスタムドメインが本命） -->
+  <link rel="canonical" href="https://pc-diagnosis.shorts-ranking.com/" />
+
+  <!-- Basic SEO -->
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <!-- OGP (X / SNS) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PC診断" />
+  <meta property="og:title" content="PC診断｜2択でおすすめスペックがすぐ分かる" />
+  <meta property="og:description" content="PC選びで迷う人向け。2択で進めるだけで、用途に合うPCタイプと推奨スペックの方向性を短く提示します。" />
+  <meta property="og:url" content="https://pc-diagnosis.shorts-ranking.com/" />
+  <!-- OGP画像は後で追加でOK：用意できたらここに差し替え -->
+  <!-- <meta property="og:image" content="https://pc-diagnosis.shorts-ranking.com/ogp.png" /> -->
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="PC診断｜2択でおすすめスペックがすぐ分かる" />
+  <meta name="twitter:description" content="PC選びの迷いを減らす。2択で進むだけのPC診断。" />
+
+  <!-- Favicon（既存のままでOK） -->
   <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="./favicon.png" sizes="48x48">
   <link rel="apple-touch-icon" href="./favicon.png">
 
-  <!-- CSS -->
+  <!-- CSS（分離済み前提） -->
   <link rel="stylesheet" href="./styles.css">
 </head>
 
@@ -20,7 +42,7 @@
     <header>
       <div class="brand">
         <div>
-          <h1>PC診断</h1>
+          <h1>PC診断💻</h1>
           <p class="sub">2択でサクッと。迷いを減らして、後悔しにくい方向性を出します。</p>
         </div>
       </div>
@@ -38,7 +60,7 @@
     </section>
 
     <div class="footerNote">
-      ※価格・在庫は変動します。ここでは「用途に合う方向性」を短く提示します。リンクは後で差し替え前提でOK。
+      ※価格・在庫は変動します。ここでは「用途に合う方向性」を短く提示します。
     </div>
   </div>
 
@@ -337,7 +359,7 @@
     const cautionUsed = (state.buyMode === "used") ? `
       <div class="sep"></div>
       <div class="muted">
-        <div class="danger">中古の注意（短縮版）</div>
+        <div class="danger">中古の注意</div>
         <ul>
           <li>OS/世代が古いと更新・サポート面で不利になりがち</li>
           <li>バッテリー/SSD劣化、保証の有無を必ず確認</li>
@@ -375,7 +397,7 @@
 
         <div class="sep"></div>
 
-        <div class="kicker">購入先（仮リンク）</div>
+        <div class="kicker">直リンク</div>
         <div class="links">
           ${links.map(l => `
             <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
@@ -393,9 +415,7 @@
           <button class="btn small primary" id="btnRestart">もう一回診断する</button>
         </div>
 
-        <div class="footerNote">
-          ※リンクは後で差し替えOK。まずは診断体験を固めてから最適化するのが一番速いです。
-        </div>
+
       </div>
     `;
 
